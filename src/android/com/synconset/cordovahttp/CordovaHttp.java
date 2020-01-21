@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Iterator;
 
@@ -41,6 +43,9 @@ abstract class CordovaHttp {
     private JSONObject headers;
     private int timeoutInMilliseconds;
     private CallbackContext callbackContext;
+
+    private static List<HttpRequest> httpRequests = new CopyOnWriteArrayList<HttpRequest>();
+    private static Map<HttpRequest, CallbackContext> contextMap = new ConcurrentHashMap<HttpRequest, CallbackContext>();
 
     public CordovaHttp(String urlString, Object params, JSONObject headers, int timeout, CallbackContext callbackContext) {
         this.urlString = urlString;
@@ -226,6 +231,8 @@ abstract class CordovaHttp {
       request.acceptCharset(CHARSET);
       request.headers(this.getHeadersMap());
       request.uncompress(true);
+      httpRequests.add(request);
+      contextMap.put(request, callbackContext);
     }
 
     protected void returnResponseObject(HttpRequest request) throws HttpRequestException {
@@ -260,5 +267,14 @@ abstract class CordovaHttp {
       } else {
           this.respondWithError("There was an error with the request: " + e.getMessage());
       }
+    }
+
+    public static void invalidateSessionCancelingTasks(boolean cancelPendingTasks) {
+        for (HttpRequest httpRequest : httpRequests) {
+            System.out.println("invalidateSessionCancelingTasks reached!");
+            httpRequest.invalidateSessionCancelingTasks(contextMap.get(httpRequest), cancelPendingTasks);
+        }
+        httpRequests.clear();
+        contextMap.clear();
     }
 }

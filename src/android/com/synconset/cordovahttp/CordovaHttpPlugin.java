@@ -124,6 +124,15 @@ public class CordovaHttpPlugin extends CordovaPlugin {
            boolean disable = args.getBoolean(0);
            CordovaHttp.disableRedirect(disable);
            callbackContext.success();
+        } else if (action.equals("invalidateSessionCancelingTasks")) {
+            try {
+                boolean cancelPendingTasks = args.getBoolean(0);
+                CordovaHttp.invalidateSessionCancelingTasks(cancelPendingTasks);
+                callbackContext.success();
+            } catch(Exception e) {
+                e.printStackTrace();
+                callbackContext.error("Could not invalidate session.");
+            }
         } else {
             return false;
         }

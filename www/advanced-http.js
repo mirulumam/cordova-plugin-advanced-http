@@ -355,6 +355,9 @@ var http = {
         var onFail = injectCookieHandler(url, failure);
 
         return exec(onSuccess, onFail, 'CordovaHttpPlugin', 'downloadFile', [url, params, headers, filePath, this.timeoutInSeconds]);
+    },
+    invalidateSessionCancelingTasks: function(cancelPendingTasks, success, failure) {
+        return exec(success, failure, "CordovaHttpPlugin", "invalidateSessionCancelingTasks", [cancelPendingTasks]);
     }
 };
 
